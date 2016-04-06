@@ -14,7 +14,7 @@ public class Mediator {
 		oh = new OracleHandler();
 	}
 
-	public void decodeTriple(ArrayList<Triple> triples, ArrayList<String> display) {
+	public String[][] decodeTriple(ArrayList<Triple> triples, ArrayList<String> display) {
 		ArrayList<Triple> oracle = new ArrayList<Triple>();
 		ArrayList<Triple> lod = new ArrayList<Triple>();
 
@@ -38,27 +38,49 @@ public class Mediator {
 				oracle.add(t);
 				break;
 			default:
-				System.err.println(t.getAttribute()+" not found in decodeTriple");
+				System.err.println(t.getAttribute() + " not found in decodeTriple");
 				break;
 			}
 		}
-		
+
 		String sql = QueryConstructor.createOracleQuery(oracle, display);
-		//TODO create query for LOD
-		
+		// TODO create query for LOD
+
 		ResultSet SQLresult = executeQuery(sql);
+		ArrayList<ArrayList<String>> resultSQL = new ArrayList<>();
 		try {
-			for(String s : display)
-				System.out.println(s+"\t\t");
-			while(SQLresult.next()){
-				for(String s : display){
-					System.out.println(SQLresult.getString(s));
+			
+			for (int i = 0; i < display.size(); i++) {
+				String s = display.get(i);
+
+				//System.out.print(s + "\t\t");
+				resultSQL.add(new ArrayList<String>());
+			}
+			//System.out.println();
+			while (SQLresult.next()) {
+				for (int i = 0; i < display.size(); i++) {
+					String s = display.get(i);
+					resultSQL.get(i).add(SQLresult.getString(s));
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Catch a sql exeption in mediator [" + e.getMessage() + "]");
+		}catch (NullPointerException e){
+			System.err.println("Catch a exeption in the mediator ["+e.getMessage()+"]");
 		}
+		String[][] result = null;
+		if (!resultSQL.isEmpty()) {
+			result = new String[resultSQL.get(0).size()][display.size()];
+
+			for (int i = 0; i < display.size(); i++)
+				for (int j = 0; j < resultSQL.get(0).size(); j++) {
+					result[j][i] = resultSQL.get(i).get(j);
+					//System.out.println(resultSQL.get(i).get(j));
+				}
+			//System.out.println();
+		}
+		
+		return result;
 	}
 
 	private ResultSet executeQuery(String sql) {

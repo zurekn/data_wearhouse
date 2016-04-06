@@ -17,11 +17,9 @@ public class QueryConstructor {
 			if (t.getAttribute().isEmpty())
 				continue;
 			
-			if (select.contains(t.getAttribute())) {
-				// champ deja selectionner
-			} else {
+			if(!fromList.contains(t.getAttribute()))
 				fromList.add(t.getAttribute());// For the from list
-			}
+			
 
 			
 			if (!t.getOperator().isEmpty() && !t.getValue().isEmpty())
@@ -34,8 +32,21 @@ public class QueryConstructor {
 
 		//SELECT
 		for(String s : display){
+			if(!fromList.contains(s))
+				fromList.add(s);
+			switch(s){
+			case "Genre":
+				s = "g."+s;
+				break;
+			case "Studio":
+				s = "s."+s;
+				break;
+			default :
+				s = "m."+s;
+				break;
+			}
 			if (select.isEmpty()) {
-				select += "Select " + s;
+				select += "Select DISTINCT " + s;
 			} else {
 				select += ", " + s;
 			}
@@ -57,7 +68,7 @@ public class QueryConstructor {
 				from += " LEFT JOIN GENRE g on m.movie = g.movie";
 				break;
 			case "Studio":
-				from += " LEFT JOIN STUDIO s on s.movie = s.movie";
+				from += " LEFT JOIN STUDIO s on m.movie = s.movie";
 			}
 		}
 		return from;

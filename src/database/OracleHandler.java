@@ -32,8 +32,7 @@ public class OracleHandler {
 			Statement stat = oracleCon.getConnection().createStatement();
 			result = stat.executeQuery(query);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Catch a sql exeption : ["+e.getMessage()+"]");
 		}
 		return result;
 	}

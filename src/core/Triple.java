@@ -13,6 +13,9 @@ public class Triple {
 		this.value = value;
 	}
 	
+	public Triple() {
+	}
+
 	public String getAttribute() {
 		return attribute;
 	}
@@ -35,6 +38,14 @@ public class Triple {
 	@Override
 	public String toString() {
 		return "Triple [attribute=" + attribute + ", operator=" + operator + ", value=" + value + "]";
+	}
+
+	public void setAll(String[] tvalue) {
+		if(tvalue.length == 3){
+			attribute = tvalue[0];
+			operator = tvalue[1];
+			value = tvalue[2];
+		}
 	}
 	
 	
