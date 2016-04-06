@@ -48,6 +48,9 @@ public class IHM {
 	private JCheckBox chckbxProductionBudget;
 	private JCheckBox chckbxDomesticGross;
 	private JCheckBox chckbxWordwideGross;
+	private JCheckBox chckbxDirector;
+	private JCheckBox chckbxActor;
+	private JCheckBox chckbxCharacter;
 	/**
 	 * Launch the application.
 	 */
@@ -94,14 +97,15 @@ public class IHM {
 		gbc_lr_panel.gridy = 0;
 		frame.getContentPane().add(lr_panel, gbc_lr_panel);
 		GridBagLayout gbl_lr_panel = new GridBagLayout();
-		gbl_lr_panel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_lr_panel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_lr_panel.rowHeights = new int[] { 0, 0, 0, 0 };
-		gbl_lr_panel.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_lr_panel.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		gbl_lr_panel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		lr_panel.setLayout(gbl_lr_panel);
 
-		JLabel lblDisplayColumns = new JLabel("Display columns :");
+		JLabel lblDisplayColumns = new JLabel("Display columns");
 		GridBagConstraints gbc_lblDisplayColumns = new GridBagConstraints();
+		gbc_lblDisplayColumns.gridwidth = 10;
 		gbc_lblDisplayColumns.insets = new Insets(0, 0, 5, 5);
 		gbc_lblDisplayColumns.gridheight = 2;
 		gbc_lblDisplayColumns.gridx = 0;
@@ -153,9 +157,30 @@ public class IHM {
 
 		chckbxWordwideGross = new JCheckBox("Wordwide Gross");
 		GridBagConstraints gbc_chckbxWordwideGross = new GridBagConstraints();
+		gbc_chckbxWordwideGross.insets = new Insets(0, 0, 0, 5);
 		gbc_chckbxWordwideGross.gridx = 7;
 		gbc_chckbxWordwideGross.gridy = 2;
 		lr_panel.add(chckbxWordwideGross, gbc_chckbxWordwideGross);
+		
+		chckbxDirector = new JCheckBox("Director");
+		GridBagConstraints gbc_chckbxDirector = new GridBagConstraints();
+		gbc_chckbxDirector.insets = new Insets(0, 0, 0, 5);
+		gbc_chckbxDirector.gridx = 8;
+		gbc_chckbxDirector.gridy = 2;
+		lr_panel.add(chckbxDirector, gbc_chckbxDirector);
+		
+		chckbxActor = new JCheckBox("Actor");
+		GridBagConstraints gbc_chckbxActor = new GridBagConstraints();
+		gbc_chckbxActor.insets = new Insets(0, 0, 0, 5);
+		gbc_chckbxActor.gridx = 9;
+		gbc_chckbxActor.gridy = 2;
+		lr_panel.add(chckbxActor, gbc_chckbxActor);
+		
+		chckbxCharacter = new JCheckBox("Character");
+		GridBagConstraints gbc_chckbxCharacter = new GridBagConstraints();
+		gbc_chckbxCharacter.gridx = 10;
+		gbc_chckbxCharacter.gridy = 2;
+		lr_panel.add(chckbxCharacter, gbc_chckbxCharacter);
 
 		JPanel lc_panel = new JPanel();
 		GridBagConstraints gbc_lc_panel = new GridBagConstraints();
@@ -267,6 +292,17 @@ public class IHM {
 		if(chckbxWordwideGross.isSelected()){
 			display.add("Worldwide_gross");
 		}
+		
+		if(chckbxActor.isSelected()){
+			display.add("Actor");
+		}
+		if(chckbxCharacter.isSelected()){
+			display.add("Character");
+		}
+		if(chckbxDirector.isSelected()){
+			display.add("Director");
+		}
+		//TODO add actor, director, character display
 		for(int row = 0; row < jtableCondition.getRowCount(); row++){
 			Triple t = new Triple();
 			String[] tvalue = new String[3];
