@@ -6,6 +6,13 @@ import java.sql.SQLException;
 
 public class OracleConnexion {
 
+	private static final String USER_NAME = "BOB";
+	private static final String PASSWORD = "Cyborgv7";
+	private static final String IP = "localhost";
+	private static final String DATABASE = "oracle";
+
+	private Connection connection;
+	
 	public OracleConnexion(){
 		System.out.println("-------- Oracle JDBC Connection Testing ------");
 
@@ -23,13 +30,13 @@ public class OracleConnexion {
 
 		System.out.println("Oracle JDBC Driver Registered!");
 
-		Connection connection = null;
+		connection = null;
 
 		try {
 
 			connection = DriverManager.getConnection(
-					"jdbc:oracle:thin:@localhost:1521:oracle", "BOB",
-					"Cyborgv7");
+					"jdbc:oracle:thin:@"+IP+":1521:"+DATABASE, USER_NAME,
+					PASSWORD);
 
 		} catch (SQLException e) {
 
@@ -42,8 +49,11 @@ public class OracleConnexion {
 		if (connection != null) {
 			System.out.println("You made it, take control your database now!");
 		} else {
-			System.out.println("Failed to make connection!");
+			System.err.println("Failed to make connection!");
 		}
 	}
 	
+	public Connection getConnection(){
+		return connection;
+	}
 }
