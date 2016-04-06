@@ -15,11 +15,12 @@ public class QueryResultDialog extends JDialog {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         vhsTable = new JTable(data, columnNames);
+        vhsTable.setAutoCreateRowSorter(true);
         add(new JScrollPane(vhsTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
-                BorderLayout.CENTER);
+                BorderLayout.CENTER); 
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        // setModalityType(ModalityType.APPLICATION_MODAL);
+        setModalityType(ModalityType.APPLICATION_MODAL);
         pack();
         setVisible(true);
     }

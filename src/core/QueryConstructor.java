@@ -2,6 +2,8 @@ package core;
 
 import java.util.ArrayList;
 
+import database.OracleHandler;
+
 public class QueryConstructor {
 
 	public static String createOracleQuery(ArrayList<Triple> oracle, ArrayList<String> display) {
@@ -22,29 +24,29 @@ public class QueryConstructor {
 			
 
 			
-			if (!t.getOperator().isEmpty() && !t.getValue().isEmpty())
-				if (where.isEmpty()) {
-					where += "WHERE " + t.getAttribute() + " " + t.getOperator() + " " + t.getValue();
-				} else {
-					where += "," + t.getAttribute() + " " + t.getOperator() + " " + t.getValue();
+			if (!t.getOperator().isEmpty() && !t.getValue().isEmpty()){
+				String value; 
+				try{
+				 value = ""+Integer.parseInt(t.getValue());
+				}catch(NumberFormatException e){
+					value = "'"+t.getValue()+"'";
 				}
+				
+				if (where.isEmpty()) {
+					where += "WHERE " + OracleHandler.getRealColName(t.getAttribute()) + " " + t.getOperator() + " " + value;
+				} else {
+					where += " AND " + OracleHandler.getRealColName(t.getAttribute()) + " " + t.getOperator() + " " + value;
+				}
+			}else{
+				System.out.println(" No case about "+t.toString());
+			}
 		}
 
 		//SELECT
 		for(String s : display){
 			if(!fromList.contains(s))
 				fromList.add(s);
-			switch(s){
-			case "Genre":
-				s = "g."+s;
-				break;
-			case "Studio":
-				s = "s."+s;
-				break;
-			default :
-				s = "m."+s;
-				break;
-			}
+			s = OracleHandler.getRealColName(s);
 			if (select.isEmpty()) {
 				select += "Select DISTINCT " + s;
 			} else {
@@ -53,7 +55,7 @@ public class QueryConstructor {
 		}
 		
 		// FROM
-		where = createFrom(fromList);
+		from = createFrom(fromList);
 
 		query = select + " " + from + " " + where + " " + sort;
 		return query;
