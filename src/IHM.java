@@ -22,6 +22,8 @@ import javax.swing.JLabel;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -35,6 +37,8 @@ import javax.swing.JScrollPane;
 
 import core.Mediator;
 import core.Triple;
+import java.awt.Color;
+import java.awt.Font;
 
 public class IHM {
 
@@ -51,6 +55,7 @@ public class IHM {
 	private JCheckBox chckbxDirector;
 	private JCheckBox chckbxActor;
 	private JCheckBox chckbxCharacter;
+	private JLabel lblWarning;
 	/**
 	 * Launch the application.
 	 */
@@ -190,27 +195,37 @@ public class IHM {
 		frame.getContentPane().add(lc_panel, gbc_lc_panel);
 		GridBagLayout gbl_lc_panel = new GridBagLayout();
 		gbl_lc_panel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_lc_panel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0 };
-		gbl_lc_panel.columnWeights = new double[] { 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		gbl_lc_panel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+		gbl_lc_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 				0.0, 0.0, Double.MIN_VALUE };
-		gbl_lc_panel.rowWeights = new double[] { 1.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_lc_panel.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		lc_panel.setLayout(gbl_lc_panel);
+		
+		lblWarning = new JLabel("Warning : Operator on colums [Director, Actor, Character] must be empty or =");
+		lblWarning.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblWarning.setForeground(Color.RED);
+		GridBagConstraints gbc_lblWarning = new GridBagConstraints();
+		gbc_lblWarning.gridwidth = 27;
+		gbc_lblWarning.insets = new Insets(0, 0, 5, 5);
+		gbc_lblWarning.gridx = 0;
+		gbc_lblWarning.gridy = 0;
+		lc_panel.add(lblWarning, gbc_lblWarning);
 
 		JLabel lblConditions = new JLabel("Conditions :");
 		GridBagConstraints gbc_lblConditions = new GridBagConstraints();
 		gbc_lblConditions.insets = new Insets(0, 0, 5, 5);
 		gbc_lblConditions.gridx = 0;
-		gbc_lblConditions.gridy = 0;
+		gbc_lblConditions.gridy = 1;
 		lc_panel.add(lblConditions, gbc_lblConditions);
 
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.gridheight = 5;
 		gbc_scrollPane.gridwidth = 20;
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 2;
-		gbc_scrollPane.gridy = 0;
+		gbc_scrollPane.gridy = 1;
 		lc_panel.add(scrollPane, gbc_scrollPane);
 
 		jtableCondition = new JTable();
@@ -237,7 +252,7 @@ public class IHM {
 		TableColumn col0 = jtableCondition.getColumnModel().getColumn(0);
 		col0.setCellEditor(new MyComboBoxEditor(Data.COMBO_BOX_FIELD_VALUES));
 		col0.setCellRenderer(new MyComboBoxRenderer(Data.COMBO_BOX_FIELD_VALUES));
-		
+
 		TableColumn col1 = jtableCondition.getColumnModel().getColumn(1);
 		col1.setCellEditor(new MyComboBoxEditor(Data.COMBO_BOX_OPERATOR_VALUES));
 		col1.setCellRenderer(new MyComboBoxRenderer(Data.COMBO_BOX_OPERATOR_VALUES));
@@ -251,7 +266,7 @@ public class IHM {
 		gbc_btnNewCondition.gridwidth = 5;
 		gbc_btnNewCondition.insets = new Insets(0, 0, 5, 0);
 		gbc_btnNewCondition.gridx = 22;
-		gbc_btnNewCondition.gridy = 0;
+		gbc_btnNewCondition.gridy = 1;
 		lc_panel.add(btnNewCondition, gbc_btnNewCondition);
 
 		JButton btnDisplayResult = new JButton("Display result");
@@ -263,7 +278,7 @@ public class IHM {
 		GridBagConstraints gbc_btnDisplayResult = new GridBagConstraints();
 		gbc_btnDisplayResult.gridwidth = 5;
 		gbc_btnDisplayResult.gridx = 22;
-		gbc_btnDisplayResult.gridy = 4;
+		gbc_btnDisplayResult.gridy = 5;
 		lc_panel.add(btnDisplayResult, gbc_btnDisplayResult);
 	}
 
@@ -292,16 +307,16 @@ public class IHM {
 		if(chckbxWordwideGross.isSelected()){
 			display.add("Worldwide_gross");
 		}
-		
+		if(chckbxDirector.isSelected()){
+			display.add("Director");
+		}
 		if(chckbxActor.isSelected()){
 			display.add("Actor");
 		}
 		if(chckbxCharacter.isSelected()){
 			display.add("Character");
 		}
-		if(chckbxDirector.isSelected()){
-			display.add("Director");
-		}
+		
 		//TODO add actor, director, character display
 		for(int row = 0; row < jtableCondition.getRowCount(); row++){
 			Triple t = new Triple();
