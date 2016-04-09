@@ -3,32 +3,49 @@ package core;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import database.LOD;
 import database.OracleConnexion;
 import database.OracleHandler;
 
 public class Mediator {
 	private OracleHandler oh;
+	private LOD lod;
 
 	public Mediator() {
 		oh = new OracleHandler();
+		lod = new LOD();
 	}
 
 	public String[][] decodeTriple(ArrayList<Triple> triples, ArrayList<String> display) {
+
+		return secondScenario(triples, display);
+	}
+
+	private String[][] firstScenario() {
+		String[][] result = null;
+
+		return result;
+	}
+
+	private String[][] secondScenario(ArrayList<Triple> triples, ArrayList<String> display) {
 		ArrayList<Triple> oracle = new ArrayList<Triple>();
 		ArrayList<String> oracleDisplay = new ArrayList<>();
-		ArrayList<Triple> lod = new ArrayList<Triple>();
-
+		ArrayList<Triple> lodTriples = new ArrayList<Triple>();
+		
+		int movieDisplay = 1;
+		
 		for (Triple t : triples) {
 			switch (t.getAttribute()) {
-			case "Movie":
-				lod.add(t);
+			case "Movie":	
+				lodTriples.add(t);
 				oracle.add(t);
 				break;
 			case "Director":
 			case "Actor":
 			case "Charactere":
-				lod.add(t);
+				lodTriples.add(t);
 				break;
 			case "Release_date":
 			case "Genre":
@@ -43,70 +60,87 @@ public class Mediator {
 				break;
 			}
 		}
-		
-		for(String s : display){
-			switch(s){
+		boolean director = false, character = false, actor = false;
+		String movie = null;
+		for (String s : display) {
+			switch (s) {
 			case "Director":
+				director = true;
 				break;
 			case "Character":
+				character = true;
 				break;
 			case "Actor":
+				actor = true;
 				break;
 			case "Movie":
+				movieDisplay = 0;
+				movie = s;
 				oracleDisplay.add(s);
 				break;
-				default:
-					oracleDisplay.add(s);
+			default:
+				oracleDisplay.add(s);
 			}
 		}
 
-		System.out.println("SQL triple : "+oracle.toString());
-		System.out.println("LOD triple : "+lod.toString());
-		String sql = QueryConstructor.createOracleQuery(oracle, oracleDisplay);
-		// TODO create query for LOD
+		if(!display.contains("Movie"))
+			oracleDisplay.add(0, "Movie");
 		
-		//============SQL process=============
+		System.out.println("SQL triple : " + oracle.toString());
+		System.out.println("LOD triple : " + lodTriples.toString());
+		String sql = QueryConstructor.createOracleQuery(oracle, oracleDisplay);
+
+		ArrayList<ArrayList<String>> lodResult = lod.selectMovies(movie, director, actor, character, lodTriples);
+		System.out.println("lod found "+lodResult.size()+" elements");
+		// ============SQL process=============
 		ResultSet SQLresult = executeQuery(sql);
 		ArrayList<ArrayList<String>> resultSQL = new ArrayList<>();
 		try {
-			
-			for (int i = 0; i < oracleDisplay.size(); i++) {
-				String s = oracleDisplay.get(i);
-
-				//System.out.print(s + "\t\t");
-				resultSQL.add(new ArrayList<String>());
-			}
-			//System.out.println();
 			while (SQLresult.next()) {
+				ArrayList<String> line = new ArrayList<String>();
 				for (int i = 0; i < oracleDisplay.size(); i++) {
 					String s = oracleDisplay.get(i);
-					resultSQL.get(i).add(SQLresult.getString(s));
+					line.add(SQLresult.getString(s));
 				}
+				resultSQL.add(line);
 			}
 		} catch (SQLException e) {
 			System.err.println("Catch a sql exeption in mediator [" + e.getMessage() + "]");
-		}catch (NullPointerException e){
-			System.err.println("Catch a exeption in the mediator ["+e.getMessage()+"]");
+		} catch (NullPointerException e) {
+			System.err.println("Catch a exeption in the mediator [" + e.getMessage() + "]");
 		}
+
+		// JOIN SQL LIST AND LOD LIST
+
 		String[][] result = null;
-		int nbRow = 0;
 		if (!resultSQL.isEmpty()) {
-			result = new String[resultSQL.get(0).size()][display.size()];
-			nbRow = resultSQL.get(0).size();
-			for (int i = 0; i < oracleDisplay.size(); i++)
-				for (int j = 0; j < resultSQL.get(0).size(); j++) {
-					result[j][i] = resultSQL.get(i).get(j);
-					//System.out.println(resultSQL.get(i).get(j));
+			result = new String[resultSQL.size()][display.size()];
+			for (int i = 0; i < resultSQL.size(); i++) {
+				String name = resultSQL.get(i).get(0);
+				for (int j = 0 + movieDisplay; j < resultSQL.get(0).size(); j++) {
+					result[i][j - movieDisplay] = resultSQL.get(i).get(j);
+					// System.out.println(resultSQL.get(i).get(j));
 				}
-			//System.out.println();
-		}
-		
-		//============END OF SQL process=============
-		for(int i = oracleDisplay.size(); i < display.size(); i++){
-			for(int j = 0; j < nbRow; j++){
-				result[j][i] = "";
+				Iterator<ArrayList<String>> it = lodResult.iterator();
+				while (it.hasNext()) {
+					ArrayList<String> line = it.next();
+					if (!line.isEmpty()) {
+						String m = line.get(0);
+						System.out.println(m);
+						if (m.equals(name)){
+							for (int j = 1; j < line.size(); j++) {
+								result[i][oracleDisplay.size() - movieDisplay + j - 1] = line.get(j);
+							}
+						it.remove();
+						}
+					}
+				}
 			}
+			// System.out.println();
 		}
+
+		// ============END OF SQL process=============
+
 		return result;
 	}
 
