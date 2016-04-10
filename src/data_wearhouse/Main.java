@@ -18,7 +18,7 @@ public class Main {
 		
 		ArrayList<String> display = new ArrayList<String>();
 		display.add("Movie");
-		media.decodeTriple(ts, display);
+		//media.decodeTriple(ts, display);
 	}
 
 }

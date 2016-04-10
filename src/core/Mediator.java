@@ -18,9 +18,15 @@ public class Mediator {
 		lod = new LOD();
 	}
 
-	public String[][] decodeTriple(ArrayList<Triple> triples, ArrayList<String> display) {
-
-		return secondScenario(triples, display);
+	public String[][] decodeTriple(ArrayList<Triple> triples, ArrayList<String> display, int select) {
+		switch (select) {
+		case 1:
+			return firstScenario(triples, display);
+		case 2:
+			return secondScenario(triples, display);
+		default:
+			return new String[0][0];
+		}
 	}
 
 	private String[][] firstScenario(ArrayList<Triple> triples, ArrayList<String> display) {
@@ -28,13 +34,13 @@ public class Mediator {
 		ArrayList<Triple> oracle = new ArrayList<Triple>();
 		ArrayList<String> oracleDisplay = new ArrayList<>();
 		ArrayList<Triple> lodTriples = new ArrayList<Triple>();
-		
+
 		boolean movieDisplay = false;
 		String movie = null;
 		boolean lodRequest = false;
 		for (Triple t : triples) {
 			switch (t.getAttribute()) {
-			case "Movie":	
+			case "Movie":
 				lodTriples.add(t);
 				oracle.add(t);
 				movie = t.getValue();
@@ -79,80 +85,60 @@ public class Mediator {
 			}
 		}
 		lodRequest |= director || character || actor;
-		
-		if(!display.contains("Movie"))
+
+		if (!display.contains("Movie"))
 			oracleDisplay.add(0, "Movie");
-		
+
 		System.out.println("SQL triple : " + oracle.toString());
 		System.out.println("LOD triple : " + lodTriples.toString());
-		
-		long timeLOD = System.currentTimeMillis();
-		ArrayList<ArrayList<String>> lodResult = lodRequest ? lod.selectMovies(movie, director, actor, character, lodTriples) : new ArrayList<ArrayList<String>>();
-		System.out.println("lod found "+lodResult.size()+" elements in "+(System.currentTimeMillis() - timeLOD)+" ms");
-		
+
 		// ============SQL process=============
 		long timeSQL = System.currentTimeMillis();
 		String query = QueryConstructor.createOracleQuery(oracle, oracleDisplay);
 		ResultSet SQLresult = executeQuery(query);
+		System.out.println("SQL query done in "+(System.currentTimeMillis() - timeSQL)+"ms");
+		long timeJoin = System.currentTimeMillis();
 		ArrayList<ArrayList<String>> resultSQL = new ArrayList<>();
 		try {
+			boolean queryLOD = !lodTriples.isEmpty();
 			while (SQLresult.next()) {
 				ArrayList<String> line = new ArrayList<String>();
 				for (int i = 0; i < oracleDisplay.size(); i++) {
 					String s = oracleDisplay.get(i);
 					line.add(SQLresult.getString(s));
+					
 				}
-				resultSQL.add(line);
+				boolean add = false || queryLOD;
+				String name = line.get(0);
+				ArrayList<ArrayList<String>> lodResult = lodRequest ? lod.selectMovies(name, director, actor, character, lodTriples) : new ArrayList<ArrayList<String>>();
+				for(ArrayList<String> lodLine : lodResult){
+					ArrayList<String> tmp = (ArrayList<String>) line.clone();
+					lodLine.remove(0);
+					tmp.addAll(lodLine);
+					resultSQL.add(tmp);
+					add = true;
+				}
+				if(!add){
+					resultSQL.add(line);
+					System.out.println("Line .size = "+line.size());
+				}
 			}
 		} catch (SQLException e) {
 			System.err.println("Catch a sql exeption in mediator [" + e.getMessage() + "]");
 		} catch (NullPointerException e) {
 			System.err.println("Catch a exeption in the mediator [" + e.getMessage() + "]");
 		}
-		System.out.println("SQL found "+resultSQL.size()+" elements in "+(System.currentTimeMillis() - timeSQL)+"ms");
-
-		// JOIN SQL LIST AND LOD LIST
-		long timeJoin = System.currentTimeMillis();
-		ArrayList<ArrayList<String>> join = new ArrayList<>();
-		for(ArrayList<String> sqlLine : resultSQL){
-			String film = sqlLine.get(0);
-			if(!movieDisplay)
-				sqlLine.remove(0);
-			boolean add = false;
-			Iterator<ArrayList<String>> it = lodResult.iterator();
-			while(it.hasNext()){
-				ArrayList<String> lodLine = it.next();
-				
-				if(lodLine.get(0).equals(film)){
-					//Same film;
-					lodLine.remove(0);
-					ArrayList<String> line = new ArrayList<>();
-					line.addAll(sqlLine);
-					line.addAll(lodLine);
-					join.add(line);
-					add = true;
-					it.remove();
-				}
-			}
-			if(!add){
-				ArrayList<String> line = new ArrayList<>();
-				line.addAll(sqlLine);
-				for(int i = 1; i < display.size() - oracleDisplay.size(); i++)
-					line.add("");
-				join.add(line);
-			}
-		}
-
-		System.out.println("Join size = "+join.size()+", in "+(System.currentTimeMillis() - timeJoin)+" ms");
-		String[][] result = new String[join.size()][display.size()];
-		for(int i = 0; i < join.size(); i++){
-			for(int j = 0; j < join.get(i).size(); j++){
-				result[i][j] = join.get(i).get(j);
+		
+		System.out.println("Join size = " + resultSQL.size() + ", in " + (System.currentTimeMillis() - timeJoin) + " ms");
+		String[][] result = new String[resultSQL.size()][display.size()];
+		for (int i = 0; i < resultSQL.size(); i++) {
+			for (int j = 0; j < resultSQL.get(i).size(); j++) {
+				result[i][j] = resultSQL.get(i).get(j);
 			}
 		}
 
 		// ============END OF SQL process=============
-		System.out.println("Second execution plan took "+(System.currentTimeMillis() - timeBegin)+"ms");
+		System.out.println("First execution plan took " + (System.currentTimeMillis() - timeBegin) + "ms");
 		return result;
 	}
 
@@ -161,13 +147,13 @@ public class Mediator {
 		ArrayList<Triple> oracle = new ArrayList<Triple>();
 		ArrayList<String> oracleDisplay = new ArrayList<>();
 		ArrayList<Triple> lodTriples = new ArrayList<Triple>();
-		
+
 		boolean movieDisplay = false;
 		String movie = null;
 		boolean lodRequest = false;
 		for (Triple t : triples) {
 			switch (t.getAttribute()) {
-			case "Movie":	
+			case "Movie":
 				lodTriples.add(t);
 				oracle.add(t);
 				movie = t.getValue();
@@ -212,21 +198,24 @@ public class Mediator {
 			}
 		}
 		lodRequest |= director || character || actor;
-		
-		if(!display.contains("Movie"))
+
+		if (!display.contains("Movie"))
 			oracleDisplay.add(0, "Movie");
-		
+
 		System.out.println("SQL triple : " + oracle.toString());
 		System.out.println("LOD triple : " + lodTriples.toString());
-		
+
 		long timeLOD = System.currentTimeMillis();
 		ArrayList<ArrayList<String>> lodResult = lodRequest ? lod.selectMovies(movie, director, actor, character, lodTriples) : new ArrayList<ArrayList<String>>();
-		System.out.println("lod found "+lodResult.size()+" elements in "+(System.currentTimeMillis() - timeLOD)+" ms");
-		
+		System.out.println("lod found " + lodResult.size() + " elements in " + (System.currentTimeMillis() - timeLOD) + " ms");
+
 		// ============SQL process=============
 		long timeSQL = System.currentTimeMillis();
 		String query = QueryConstructor.createOracleQuery(oracle, oracleDisplay);
 		ResultSet SQLresult = executeQuery(query);
+		System.out.println("SQL query done in "+(System.currentTimeMillis() - timeSQL)+"ms");
+		
+		long timeJoin = System.currentTimeMillis();
 		ArrayList<ArrayList<String>> resultSQL = new ArrayList<>();
 		try {
 			while (SQLresult.next()) {
@@ -242,22 +231,21 @@ public class Mediator {
 		} catch (NullPointerException e) {
 			System.err.println("Catch a exeption in the mediator [" + e.getMessage() + "]");
 		}
-		System.out.println("SQL found "+resultSQL.size()+" elements in "+(System.currentTimeMillis() - timeSQL)+"ms");
-
 		// JOIN SQL LIST AND LOD LIST
-		long timeJoin = System.currentTimeMillis();
+
 		ArrayList<ArrayList<String>> join = new ArrayList<>();
-		for(ArrayList<String> sqlLine : resultSQL){
+		boolean queryLOD = !lodTriples.isEmpty();
+		for (ArrayList<String> sqlLine : resultSQL) {
 			String film = sqlLine.get(0);
-			if(!movieDisplay)
+			if (!movieDisplay)
 				sqlLine.remove(0);
-			boolean add = false;
+			boolean add = false || queryLOD;
 			Iterator<ArrayList<String>> it = lodResult.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				ArrayList<String> lodLine = it.next();
-				
-				if(lodLine.get(0).equals(film)){
-					//Same film;
+
+				if (lodLine.get(0).equals(film)) {
+					// Same film;
 					lodLine.remove(0);
 					ArrayList<String> line = new ArrayList<>();
 					line.addAll(sqlLine);
@@ -267,25 +255,25 @@ public class Mediator {
 					it.remove();
 				}
 			}
-			if(!add){
+			if (!add) {
 				ArrayList<String> line = new ArrayList<>();
 				line.addAll(sqlLine);
-				for(int i = 1; i < display.size() - oracleDisplay.size(); i++)
+				for (int i = 1; i < display.size() - oracleDisplay.size(); i++)
 					line.add("");
 				join.add(line);
 			}
 		}
 
-		System.out.println("Join size = "+join.size()+", in "+(System.currentTimeMillis() - timeJoin)+" ms");
+		System.out.println("Join size = " + join.size() + ", in " + (System.currentTimeMillis() - timeJoin) + " ms");
 		String[][] result = new String[join.size()][display.size()];
-		for(int i = 0; i < join.size(); i++){
-			for(int j = 0; j < join.get(i).size(); j++){
+		for (int i = 0; i < join.size(); i++) {
+			for (int j = 0; j < join.get(i).size(); j++) {
 				result[i][j] = join.get(i).get(j);
 			}
 		}
 
 		// ============END OF SQL process=============
-		System.out.println("Second execution plan took "+(System.currentTimeMillis() - timeBegin)+"ms");
+		System.out.println("Second execution plan took " + (System.currentTimeMillis() - timeBegin) + "ms");
 		return result;
 	}
 

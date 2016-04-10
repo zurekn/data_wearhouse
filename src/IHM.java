@@ -39,6 +39,8 @@ import core.Mediator;
 import core.Triple;
 import java.awt.Color;
 import java.awt.Font;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
 
 public class IHM {
 
@@ -56,6 +58,9 @@ public class IHM {
 	private JCheckBox chckbxActor;
 	private JCheckBox chckbxCharacter;
 	private JLabel lblWarning;
+	private JRadioButton rdbtnFirstPlan;
+	private JRadioButton rdbtnSecondPlan;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
 	/**
 	 * Launch the application.
 	 */
@@ -195,10 +200,10 @@ public class IHM {
 		frame.getContentPane().add(lc_panel, gbc_lc_panel);
 		GridBagLayout gbl_lc_panel = new GridBagLayout();
 		gbl_lc_panel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_lc_panel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+		gbl_lc_panel.rowHeights = new int[] { 0, 117, 0, 0, 0, 0, 0, 0 };
 		gbl_lc_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 				0.0, 0.0, Double.MIN_VALUE };
-		gbl_lc_panel.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_lc_panel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		lc_panel.setLayout(gbl_lc_panel);
 		
 		lblWarning = new JLabel("Warning : Operator on colums [Director, Actor, Character] must be empty or =");
@@ -206,7 +211,7 @@ public class IHM {
 		lblWarning.setForeground(Color.RED);
 		GridBagConstraints gbc_lblWarning = new GridBagConstraints();
 		gbc_lblWarning.gridwidth = 27;
-		gbc_lblWarning.insets = new Insets(0, 0, 5, 5);
+		gbc_lblWarning.insets = new Insets(0, 0, 5, 0);
 		gbc_lblWarning.gridx = 0;
 		gbc_lblWarning.gridy = 0;
 		lc_panel.add(lblWarning, gbc_lblWarning);
@@ -220,9 +225,9 @@ public class IHM {
 
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.gridheight = 5;
-		gbc_scrollPane.gridwidth = 20;
-		gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
+		gbc_scrollPane.gridheight = 6;
+		gbc_scrollPane.gridwidth = 22;
+		gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 2;
 		gbc_scrollPane.gridy = 1;
@@ -263,9 +268,9 @@ public class IHM {
 		buttonColumn.setMnemonic(KeyEvent.VK_D);
 
 		GridBagConstraints gbc_btnNewCondition = new GridBagConstraints();
-		gbc_btnNewCondition.gridwidth = 5;
-		gbc_btnNewCondition.insets = new Insets(0, 0, 5, 0);
-		gbc_btnNewCondition.gridx = 22;
+		gbc_btnNewCondition.gridwidth = 2;
+		gbc_btnNewCondition.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewCondition.gridx = 24;
 		gbc_btnNewCondition.gridy = 1;
 		lc_panel.add(btnNewCondition, gbc_btnNewCondition);
 
@@ -275,9 +280,27 @@ public class IHM {
 				createTripleForMediator();
 			}
 		});
+		
+		rdbtnFirstPlan = new JRadioButton("first plan");
+		rdbtnFirstPlan.setSelected(true);
+		buttonGroup.add(rdbtnFirstPlan);
+		GridBagConstraints gbc_rdbtnFirstPlan = new GridBagConstraints();
+		gbc_rdbtnFirstPlan.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnFirstPlan.gridx = 24;
+		gbc_rdbtnFirstPlan.gridy = 4;
+		lc_panel.add(rdbtnFirstPlan, gbc_rdbtnFirstPlan);
+		
+		rdbtnSecondPlan = new JRadioButton("Second plan");
+		buttonGroup.add(rdbtnSecondPlan);
+		GridBagConstraints gbc_rdbtnSecondPlan = new GridBagConstraints();
+		gbc_rdbtnSecondPlan.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnSecondPlan.gridx = 25;
+		gbc_rdbtnSecondPlan.gridy = 4;
+		lc_panel.add(rdbtnSecondPlan, gbc_rdbtnSecondPlan);
 		GridBagConstraints gbc_btnDisplayResult = new GridBagConstraints();
-		gbc_btnDisplayResult.gridwidth = 5;
-		gbc_btnDisplayResult.gridx = 22;
+		gbc_btnDisplayResult.insets = new Insets(0, 0, 5, 5);
+		gbc_btnDisplayResult.gridwidth = 2;
+		gbc_btnDisplayResult.gridx = 24;
 		gbc_btnDisplayResult.gridy = 5;
 		lc_panel.add(btnDisplayResult, gbc_btnDisplayResult);
 	}
@@ -330,7 +353,8 @@ public class IHM {
 			triples.add(t);
 		}
 		if(!display.isEmpty()){
-			String[][] datas = mediator.decodeTriple(triples, display);
+			int select = rdbtnFirstPlan.isSelected() ? 1 : 2;
+			String[][] datas = mediator.decodeTriple(triples, display, select);
 			String[] colNames = new String[display.size()];
 			for(int i = 0; i < display.size(); i++)
 				colNames[i] = display.get(i);

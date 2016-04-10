@@ -16,6 +16,7 @@ public class QueryResultDialog extends JDialog {
         setLayout(new BorderLayout());
         vhsTable = new JTable(data, columnNames);
         vhsTable.setAutoCreateRowSorter(true);
+        setTitle(data.length+" Result");
         add(new JScrollPane(vhsTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
                 BorderLayout.CENTER); 
