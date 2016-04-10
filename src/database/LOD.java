@@ -21,21 +21,21 @@ public class LOD {
 
 	public static void main(String[] args) {
 		LOD lod = new LOD();
-//		 lod.performQuery("SELECT ?title ?pers WHERE {\n" + "?x a
-//		 movie:actor;\n" + "movie:actor_name 'Johnny Depp';\n"
-//		 + "movie:performance ?mov.\n" + "?mov movie:performance_film
-//		 ?title.\n" + "OPTIONAL{\n"
-//		 + "?mov movie:performance_character ?pers.\n" + "}\n" + "}\n");
+		// lod.performQuery("SELECT ?title ?pers WHERE {\n" + "?x a
+		// movie:actor;\n" + "movie:actor_name 'Johnny Depp';\n"
+		// + "movie:performance ?mov.\n" + "?mov movie:performance_film
+		// ?title.\n" + "OPTIONAL{\n"
+		// + "?mov movie:performance_character ?pers.\n" + "}\n" + "}\n");
 
-//		lod.performQuery(
-//				"SELECT ?acname WHERE {\n?actor movie:performance_actor ?acname. \nFILTER regex(?acname ,\"Orlando Bloom\", \"i\")\n}");
+		// lod.performQuery(
+		// "SELECT ?acname WHERE {\n?actor movie:performance_actor ?acname.
+		// \nFILTER regex(?acname ,\"Orlando Bloom\", \"i\")\n}");
 
-		
 		ArrayList<Triple> LC = new ArrayList<Triple>();
-		LC.add(new Triple("Actor","","Johnny Depp"));	
-		LC.add(new Triple("Actor","","Orlando Bloom"));
-		
-		lod.selectMovies(null, false, true, true, LC);
+		// LC.add(new Triple("Actor","","Johnny Depp"));
+		// LC.add(new Triple("Actor","","Orlando Bloom"));
+
+		lod.selectMovies(null, true, false, false, LC);
 	}
 
 	public void performQuery(String query) {
@@ -59,16 +59,16 @@ public class LOD {
 
 	/**
 	 * 
-	 * @param movieName null to select all movies
+	 * @param movieName
+	 *            null to select all movies
 	 * @param showDirector
 	 * @param showActors
 	 * @param showCharacters
 	 * @param LC
 	 * @return
 	 */
-	public ArrayList<ArrayList<String>> selectMovies(String movieName, boolean showDirector, boolean showActors, boolean showCharacters,
-			ArrayList<Triple> LC) {
-
+	public ArrayList<ArrayList<String>> selectMovies(String movieName, boolean showDirector, boolean showActors,
+			boolean showCharacters, ArrayList<Triple> LC) {
 		String query = "SELECT ?mname ";
 		if (showDirector)
 			query += "?dname ";
@@ -113,6 +113,11 @@ public class LOD {
 		if (showDirector)
 			query += "?movie movie:director ?dir.\n\n?dir movie:director_name ?dname.\n";
 
+		query += "?movie movie:initial_release_date ?date .\n"
+				+ "FILTER (?date >= \"1995-01-01\" && ?date < \"2015-01-01\")";
+
+		if (showDirector)
+			query += "\n?dir movie:director_name ?dname.\n";
 		if (showActors)
 			query += "?perf movie:performance_actor ?aname.\n";
 		if (showCharacters)
@@ -128,30 +133,29 @@ public class LOD {
 		ResultSet results = qExe.execSelect();
 
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		
-		while (results.hasNext())
-		{
+
+		while (results.hasNext()) {
 			ArrayList<String> row = new ArrayList<String>();
-			
+
 			QuerySolution s = results.nextSolution();
-			RDFNode  movie= s.get("mname");
+			RDFNode movie = s.get("mname");
 			row.add(movie.toString());
-			
-			if(showDirector){
+
+			if (showDirector) {
 				RDFNode director = s.get("dname");
 				row.add(director.toString());
 			}
-			
-			if(showActors){
+
+			if (showActors) {
 				RDFNode actors = s.get("aname");
 				row.add(actors.toString());
 			}
-			
-			if(showCharacters){
+
+			if (showCharacters) {
 				RDFNode characters = s.get("cname");
 				row.add(characters.toString());
 			}
-			
+
 			result.add(row);
 		}
 		qExe.close();
