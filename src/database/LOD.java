@@ -2,6 +2,9 @@ package database;
 
 import java.util.ArrayList;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 import org.apache.http.HttpException;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
@@ -167,6 +170,7 @@ public class LOD {
 		qExe.close();
 		} catch (Exception e){
 			System.err.println(e.getMessage());
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		return result;
 	}
