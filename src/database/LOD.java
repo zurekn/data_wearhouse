@@ -2,6 +2,7 @@ package database;
 
 import java.util.ArrayList;
 
+import org.apache.http.HttpException;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 
@@ -34,8 +35,8 @@ public class LOD {
 		ArrayList<Triple> LC = new ArrayList<Triple>();
 		// LC.add(new Triple("Actor","","Johnny Depp"));
 		// LC.add(new Triple("Actor","","Orlando Bloom"));
-
-		lod.selectMovies(null, true, false, false, LC);
+		
+		lod.selectMovies(null, true, true, true, LC);
 	}
 
 	public void performQuery(String query) {
@@ -69,14 +70,14 @@ public class LOD {
 	 */
 	public ArrayList<ArrayList<String>> selectMovies(String movieName, boolean showDirector, boolean showActors,
 			boolean showCharacters, ArrayList<Triple> LC) {
-		String query = "SELECT ?mname ";
+		String query = "SELECT ?mname ?date ";
 		if (showDirector)
 			query += "?dname ";
 		if (showActors)
 			query += "?aname ";
 		if (showCharacters)
 			query += "?cname ";
-		query += "\nWHERE {\n?movie a movie:film.\n";
+		query += "\nWHERE {\n";
 
 		// Start conditions
 		if (movieName != null)
@@ -111,10 +112,10 @@ public class LOD {
 		if (showActors || showCharacters)
 			query += "?movie movie:performance ?perf.\n";
 		if (showDirector)
-			query += "?movie movie:director ?dir.\n\n?dir movie:director_name ?dname.\n";
+			query += "?movie movie:director ?dir.\n";
 
 		query += "?movie movie:initial_release_date ?date .\n"
-				+ "FILTER (?date >= \"1995-01-01\" && ?date < \"2015-01-01\")";
+				+ "FILTER ((?date >= \"1995-01-01\" && ?date < \"2015-01-01\") || ?date = \"\")\n";
 
 		if (showDirector)
 			query += "\n?dir movie:director_name ?dname.\n";
@@ -123,16 +124,19 @@ public class LOD {
 		if (showCharacters)
 			query += "?perf movie:performance_character ?cname.\n";
 
-		query += "}\n";
+		query += "}ORDER BY ?mname\n";
 
 		String queryString = prefix + query;
 
 		System.out.println(query);
+		
+		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
+
+		try {
 		Query queryObj = QueryFactory.create(queryString);
+		QueryExecution exe ; 
 		QueryExecution qExe = QueryExecutionFactory.sparqlService("http://data.linkedmdb.org/sparql", queryObj);
 		ResultSet results = qExe.execSelect();
-
-		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
 
 		while (results.hasNext()) {
 			ArrayList<String> row = new ArrayList<String>();
@@ -140,6 +144,8 @@ public class LOD {
 			QuerySolution s = results.nextSolution();
 			RDFNode movie = s.get("mname");
 			row.add(movie.toString());
+			RDFNode date = s.get("date");
+			row.add(date.toString());
 
 			if (showDirector) {
 				RDFNode director = s.get("dname");
@@ -159,6 +165,9 @@ public class LOD {
 			result.add(row);
 		}
 		qExe.close();
+		} catch (Exception e){
+			System.err.println(e.getMessage());
+		}
 		return result;
 	}
 }
