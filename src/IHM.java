@@ -312,6 +312,9 @@ public class IHM {
 		if(chckbxMovie.isSelected()){
 			display.add("Movie");
 		}
+		if(chckbxReleaseDate.isSelected()){
+			display.add("Release_date");
+		}
 		if(chckbxGenre.isSelected()){
 			display.add("Genre");
 		}
@@ -321,9 +324,7 @@ public class IHM {
 		if(chckbxProductionBudget.isSelected()){
 			display.add("Production_budget");
 		}
-		if(chckbxReleaseDate.isSelected()){
-			display.add("Release_date");
-		}
+
 		if(chckbxStudio.isSelected()){
 			display.add("Studio");
 		}

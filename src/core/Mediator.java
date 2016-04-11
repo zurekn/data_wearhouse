@@ -35,9 +35,10 @@ public class Mediator {
 		ArrayList<String> oracleDisplay = new ArrayList<>();
 		ArrayList<Triple> lodTriples = new ArrayList<Triple>();
 
-		boolean movieDisplay = false;
+		boolean movieDisplay = false, dateDisplay = false;
 		String movie = null;
 		boolean lodRequest = false;
+		boolean queryLOD = false;
 		for (Triple t : triples) {
 			switch (t.getAttribute()) {
 			case "Movie":
@@ -48,6 +49,7 @@ public class Mediator {
 			case "Director":
 			case "Actor":
 			case "Charactere":
+				queryLOD = true;
 				lodRequest = true;
 				lodTriples.add(t);
 				break;
@@ -80,6 +82,8 @@ public class Mediator {
 				movieDisplay = true;
 				oracleDisplay.add(s);
 				break;
+			case "Release_date":
+				dateDisplay = true;
 			default:
 				oracleDisplay.add(s);
 			}
@@ -88,7 +92,8 @@ public class Mediator {
 
 		if (!display.contains("Movie"))
 			oracleDisplay.add(0, "Movie");
-
+		if (!dateDisplay)
+			oracleDisplay.add(1, "Release_Date");
 		System.out.println("SQL triple : " + oracle.toString());
 		System.out.println("LOD triple : " + lodTriples.toString());
 
@@ -100,9 +105,9 @@ public class Mediator {
 		long timeJoin = System.currentTimeMillis();
 		ArrayList<ArrayList<String>> resultSQL = new ArrayList<>();
 		try {
-			boolean queryLOD = !lodTriples.isEmpty();
 			while (SQLresult.next()) {
 				ArrayList<String> line = new ArrayList<String>();
+				
 				for (int i = 0; i < oracleDisplay.size(); i++) {
 					String s = oracleDisplay.get(i);
 					line.add(SQLresult.getString(s));
@@ -110,6 +115,13 @@ public class Mediator {
 				}
 				boolean add = false || queryLOD;
 				String name = line.get(0);
+				String date = line.get(1);
+				
+				if(!dateDisplay)
+					line.remove(1);
+				if(!movieDisplay)
+					line.remove(0);
+				
 				ArrayList<ArrayList<String>> lodResult = lodRequest ? lod.selectMovies(name, director, actor, character, lodTriples) : new ArrayList<ArrayList<String>>();
 				for(ArrayList<String> lodLine : lodResult){
 					ArrayList<String> tmp = (ArrayList<String>) line.clone();
@@ -120,7 +132,6 @@ public class Mediator {
 				}
 				if(!add){
 					resultSQL.add(line);
-					System.out.println("Line .size = "+line.size());
 				}
 			}
 		} catch (SQLException e) {
@@ -148,9 +159,10 @@ public class Mediator {
 		ArrayList<String> oracleDisplay = new ArrayList<>();
 		ArrayList<Triple> lodTriples = new ArrayList<Triple>();
 
-		boolean movieDisplay = false;
+		boolean movieDisplay = false, dateDisplay = false;
 		String movie = null;
 		boolean lodRequest = false;
+		boolean queryLOD = false;
 		for (Triple t : triples) {
 			switch (t.getAttribute()) {
 			case "Movie":
@@ -161,6 +173,7 @@ public class Mediator {
 			case "Director":
 			case "Actor":
 			case "Charactere":
+				queryLOD = true;
 				lodRequest = true;
 				lodTriples.add(t);
 				break;
@@ -193,6 +206,8 @@ public class Mediator {
 				movieDisplay = true;
 				oracleDisplay.add(s);
 				break;
+			case "Release_Date":
+				dateDisplay = true;
 			default:
 				oracleDisplay.add(s);
 			}
@@ -201,7 +216,8 @@ public class Mediator {
 
 		if (!display.contains("Movie"))
 			oracleDisplay.add(0, "Movie");
-
+		if (!dateDisplay)
+			oracleDisplay.add(1, "Release_Date");
 		System.out.println("SQL triple : " + oracle.toString());
 		System.out.println("LOD triple : " + lodTriples.toString());
 
@@ -231,14 +247,18 @@ public class Mediator {
 		} catch (NullPointerException e) {
 			System.err.println("Catch a exeption in the mediator [" + e.getMessage() + "]");
 		}
+		System.out.println("SQL query returned : "+resultSQL.size());
 		// JOIN SQL LIST AND LOD LIST
 
 		ArrayList<ArrayList<String>> join = new ArrayList<>();
-		boolean queryLOD = !lodTriples.isEmpty();
 		for (ArrayList<String> sqlLine : resultSQL) {
 			String film = sqlLine.get(0);
+			String date = sqlLine.get(1);
+			if(!dateDisplay)
+				sqlLine.remove(1);
 			if (!movieDisplay)
 				sqlLine.remove(0);
+
 			boolean add = false || queryLOD;
 			Iterator<ArrayList<String>> it = lodResult.iterator();
 			while (it.hasNext()) {
