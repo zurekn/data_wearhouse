@@ -36,8 +36,8 @@ public class LOD {
 		// \nFILTER regex(?acname ,\"Orlando Bloom\", \"i\")\n}");
 
 		ArrayList<Triple> LC = new ArrayList<Triple>();
-		// LC.add(new Triple("Actor","","Johnny Depp"));
-		// LC.add(new Triple("Actor","","Orlando Bloom"));
+		LC.add(new Triple("Actor","=","Johnny Depp"));
+		LC.add(new Triple("Actor","!=","Orlando Bloom"));
 		
 		lod.selectMovies(null, true, true, true, LC);
 	}
@@ -88,24 +88,44 @@ public class LOD {
 
 		int i = 0;
 		for (Triple t : LC) {
+			if(t.getOperator().equals("=")){
 			switch (t.getAttribute()) {
-			case "Director":
-				query += "\n?director" + i + " movie:director_name \"" + t.getValue() + "\".\n"
-						+ "?movie movie:director ?director" + i + " .\n";
-				i++;
-				break;
-			case "Actor":
-				query += "\n?actor" + i + " movie:actor_name \"" + t.getValue() + "\".\n" + "?movie movie:actor ?actor"
-						+ i + " .\n";
-				i++;
-				break;
-			case "Character":
-				query += "\n?character" + i + " movie:performance_character \"" + t.getValue() + "\".\n"
-						+ "?movie movie:performance ?character" + i + " .\n";
-				i++;
-				break;
-			default:
-				break;
+				case "Director":
+					query += "\n?director" + i + " movie:director_name \"" + t.getValue() + "\".\n"
+							+ "?movie movie:director ?director" + i + " .\n";
+					i++;
+					break;
+				case "Actor":
+					query += "\n?actor" + i + " movie:actor_name \"" + t.getValue() + "\".\n" + "?movie movie:actor ?actor"
+							+ i + " .\n";
+					i++;
+					break;
+				case "Character":
+					query += "\n?character" + i + " movie:performance_character \"" + t.getValue() + "\".\n"
+							+ "?movie movie:performance ?character" + i + " .\n";
+					i++;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
+		for (Triple t : LC) {
+			if(t.getOperator().equals("!=")){
+			switch (t.getAttribute()) {
+				case "Director":
+					query += "\nFILTER (?dname != \""+t.getValue()+"\")\n\n";
+					break;
+				case "Actor":
+					query += "\nFILTER (?aname != \""+t.getValue()+"\")\n";
+					break;
+				case "Character":
+					query += "\nFILTER (?cname != \""+t.getValue()+"\")\n";
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
